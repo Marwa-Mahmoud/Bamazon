@@ -14,7 +14,9 @@ var connection = mysql.createConnection({
 connection.connect(function(err){
 
     if(err) throw err;
+    console.log("\n========================================");
     console.log("Welcome to our store! You are connected!");
+    console.log("========================================\n");
 
 });
 
@@ -22,11 +24,10 @@ var query = connection.query(
     "SELECT * FROM products",
     function(err, res){
         if(err) throw err;
-        console.log("This is a list of our products: \n");
+        console.log("This is a list of our products:");
         for(var i=0; i<res.length; i++){
             arrayOfItemsIds.push(res[i].item_id.toString());
             arrayOfItems.push(res[i].item_id + " | " + res[i].product_name + " | " + res[i].price);
-            console.log(res[i].item_id + " | " + res[i].product_name + " | " + res[i].price)
         }
        
         userOrder();
@@ -34,13 +35,12 @@ var query = connection.query(
 )
 
 function userOrder(){
-    console.log(arrayOfItemsIds);
-    var arr = arrayOfItemsIds;
+
     inquirer.prompt([{
         name: "productId",
         type: 'list',
        choices: arrayOfItems,
-        message: 'Choose the ID of the product that you would like to buy ...\n',
+        message: 'Please choose the product that you would like to buy ...\n==============================================================\n'
   
     },
     {
@@ -57,21 +57,22 @@ function userOrder(){
 
     }]).then(function(answers){
 
+
         var selectedItemId = (answers.productId.split(" |"))[0];
-        console.log(selectedItemId);
 
         var query = connection.query(
-            "SELECT stock_quantity FROM products WHERE ?",
+            "SELECT product_name, stock_quantity FROM products WHERE ?",
             {
                 item_id: selectedItemId
             },
             function(err, res){
 
                 if(err) throw err;
-                console.log(res);
+                console.log('You selected '+ answers.productCount + ' items from the product "' + res[0].product_name + '"');
 
                 if(answers.productCount > res[0].stock_quantity){
-                    console.log("There is no enough stock form the poduct you orderd. Please come back later.\n");
+                    console.log("sorry there is not enough stock form the poduct you orderd. Please check this item later.\n");
+                    continueOrLeave();
                 }
                 else{
 
@@ -93,15 +94,35 @@ function userOrder(){
                                 },
                                 function(err, res){
                                     if(err) throw err;
-                                    console.log("You cost is: " + res[0].price * answers.productCount);
+                                    console.log("Your cost is: $" + res[0].price * answers.productCount);
+                                    continueOrLeave();
                                 }
                             )
                         }
                     )
 
                 }
+
+
+
             }
         )
 
+    });
+}
+
+function continueOrLeave(){
+    inquirer.prompt([{
+        type: "confirm",
+        message: "Would you like to buy something else?",
+        name: "confirm",
+        default: true
+    }]).then(function(answers){
+        if(answers.confirm)
+            userOrder();
+        else{
+            console.log("Thank you! Please come again later");
+            connection.end();
+        }
     });
 }
