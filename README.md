@@ -20,4 +20,6 @@ The user can connect to the app as a Customer, Manager or Supervisor.
 - If the user connects as a **Supervisor**, they have two choices:
   - View products sales by department.
   - Add a new department.
-
+  
+- Link for this app videos:
+https://www.dropbox.com/sh/5glimq985hvyjif/AAAOV4xibutC0SeM_NsUPROna?dl=0 
