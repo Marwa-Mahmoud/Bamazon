@@ -88,14 +88,32 @@ function userOrder(){
                         function(err, res){
                             if(err) throw err;
                             var query = connection.query(
-                                "SELECT price FROM products WHERE ?",
+                                "SELECT price, product_sales FROM products WHERE ?",
                                 {
                                     item_id: answers.productId   
                                 },
                                 function(err, res){
                                     if(err) throw err;
-                                    console.log("Your cost is: $" + res[0].price * answers.productCount);
-                                    continueOrLeave();
+                                    var cost = res[0].price * answers.productCount;
+                                    var productSales = res[0].product_sales + cost;
+                                    console.log("Your cost is: $" + cost);
+                                    var query = connection.query(
+                                        "UPDATE products SET ? WHERE ?",
+                                        [
+                                            {
+                                                product_sales: productSales
+                                            },
+                                            {
+                                                item_id: answers.productId
+                                            }
+                                        ],
+                                        function(err, res){
+                                            if(err) throw err;
+                                            console.log("database updated");
+                                            continueOrLeave();
+                                        }
+                                    )
+                                   
                                 }
                             )
                         }
